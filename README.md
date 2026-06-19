@@ -4,7 +4,7 @@ Publish OpenAI Codex usage limits to Home Assistant over MQTT.
 
 **Codex Home Assistant MQTT Bridge** reads the same Codex usage information used by the Codex client, normalizes it, and publishes Home Assistant MQTT Discovery entities for the 5-hour and weekly usage windows.
 
-It is designed to be lightweight: there are no npm package dependencies, and the included Windows helper scripts can run the bridge silently in the background at sign-in.
+It is designed to be lightweight: there are no npm package dependencies, and included startup helpers can run the bridge in the background on Windows or macOS.
 
 ---
 
@@ -21,6 +21,7 @@ It is designed to be lightweight: there are no npm package dependencies, and the
 - Publishes plan, credits, and limit status.
 - Runs without npm dependencies.
 - Includes Windows startup helpers that run silently in the background.
+- Includes a macOS LaunchAgent installer for background startup at login.
 
 ---
 
@@ -127,6 +128,41 @@ If you are using the Windows helper:
 
 ---
 
+## Background startup on macOS
+
+First copy and configure the environment file:
+
+```bash
+cp .env.example .env
+```
+
+Install and immediately start a per-user LaunchAgent:
+
+```bash
+./install-launch-agent.sh
+```
+
+The installer resolves the current Node.js executable, requires Node.js 20 or newer, and creates:
+
+```text
+~/Library/LaunchAgents/com.ofilis.codex-ha-bridge.plist
+```
+
+The bridge starts when you sign in and restarts if it exits. Logs are written to:
+
+```text
+logs/bridge.log
+logs/bridge-error.log
+```
+
+Run the installer again after moving the repository or changing the Node.js installation. To stop the bridge and remove the LaunchAgent:
+
+```bash
+./uninstall-launch-agent.sh
+```
+
+---
+
 ## Silent startup on Windows
 
 To create a Windows startup shortcut:
@@ -216,6 +252,8 @@ severity:
 ├── .env.example
 ├── README.md
 ├── package.json
+├── install-launch-agent.sh
+├── uninstall-launch-agent.sh
 ├── start.bat
 ├── run.ps1
 ├── run-service.ps1
@@ -242,6 +280,7 @@ severity:
 - `src/codexUsage.js` — Codex usage request and normalization.
 - `src/mqttHa.js` — Home Assistant MQTT Discovery and state publishing.
 - `src/simpleMqtt.js` — minimal MQTT client implementation.
+- `install-launch-agent.sh` / `uninstall-launch-agent.sh` — macOS LaunchAgent management.
 - `start.bat`, `run.ps1`, `run-service.ps1`, `run-hidden.vbs` — Windows run helpers.
 - `install-startup-task.ps1` / `uninstall-startup-task.ps1` — Windows startup shortcut management.
 
@@ -279,6 +318,13 @@ The check script runs `node --check` against the source files.
 - Re-run `install-startup-task.bat` or `install-startup-task.ps1`.
 - Check `logs/bridge.log` in the repository directory.
 - Confirm Node.js is available, or that the Codex desktop app bundled Node.js runtime can be found by the helper scripts.
+
+### The macOS LaunchAgent does not start
+
+- Check `logs/bridge-error.log` for startup or connection errors.
+- Run `launchctl print gui/$(id -u)/com.ofilis.codex-ha-bridge` to inspect its status.
+- Re-run `./install-launch-agent.sh` after moving the repository or changing the Node.js installation.
+- Confirm `.env` contains valid MQTT settings and Node.js 20 or newer is installed.
 
 ---
 
