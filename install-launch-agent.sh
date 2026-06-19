@@ -3,7 +3,7 @@
 set -eu
 
 LABEL="com.ofilis.codex-ha-bridge"
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ROOT=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 PLIST_DIR="$HOME/Library/LaunchAgents"
 PLIST_PATH="$PLIST_DIR/$LABEL.plist"
 LOG_DIR="$ROOT/logs"
